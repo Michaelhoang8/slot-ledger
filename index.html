@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Slot Ledger · Capacity reservations</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a href="#">SLOT / LEDGER</a><span>CAPACITY IS A SHARED RESOURCE.</span
+      ><button id="refresh">Refresh</button>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">RESERVATION SYSTEMS / 054</p>
+          <h1>Room for<br />what comes next.</h1>
+        </div>
+        <p>Reserve shared capacity.<br />See exactly where it fits.</p>
+      </section>
+      <div class="toolbar">
+        <label>Resource<select id="resource"></select></label
+        ><button id="demo">Create example workspace</button
+        ><button id="export">Export ledger</button>
+      </div>
+      <p id="message" role="status" aria-live="polite"></p>
+      <section id="workspace" hidden>
+        <div class="stats">
+          <div><span>CAPACITY</span><strong id="capacity"></strong></div>
+          <div><span>PEAK OCCUPANCY</span><strong id="peak"></strong></div>
+          <div>
+            <span>RESERVED UNIT-MINUTES</span><strong id="total"></strong>
+          </div>
+          <p id="integrity"></p>
+        </div>
+        <section class="timeline">
+          <div class="section-heading">
+            <h2>Occupancy</h2>
+            <span>Half-open intervals · abstract minutes</span>
+          </div>
+          <svg
+            id="plot"
+            viewBox="0 0 1000 250"
+            role="img"
+            aria-label="Resource occupancy over the reserved time range"
+          ></svg>
+        </section>
+        <div class="columns">
+          <section>
+            <div class="section-heading">
+              <h2>Request a slot</h2>
+              <span>Preview does not hold capacity</span>
+            </div>
+            <form id="booking">
+              <label class="full"
+                >Request key<input
+                  id="request-key"
+                  maxlength="48"
+                  pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,47}"
+                  required /></label
+              ><label
+                >Start minute<input
+                  id="start"
+                  type="number"
+                  min="0"
+                  max="525599"
+                  value="90"
+                  required /></label
+              ><label
+                >End minute<input
+                  id="end"
+                  type="number"
+                  min="1"
+                  max="525600"
+                  value="150"
+                  required /></label
+              ><label
+                >Units<input
+                  id="units"
+                  type="number"
+                  min="1"
+                  max="1000"
+                  value="2"
+                  required /></label
+              ><label class="full"
+                >Note<input id="note" maxlength="120" value="Experiment run"
+              /></label>
+              <div class="full actions">
+                <button type="submit" name="action" value="preview">
+                  Check capacity</button
+                ><button
+                  type="submit"
+                  name="action"
+                  value="reserve"
+                  class="primary"
+                >
+                  Reserve slot ↗</button
+                ><button type="button" id="new-key">New request key</button>
+              </div>
+            </form>
+            <p class="hint">
+              Reuse the same key and payload to retry safely. A retry returns
+              the booking's current state; it never reactivates a cancellation.
+            </p>
+          </section>
+          <aside>
+            <p class="eyebrow">ADMISSION CHECK</p>
+            <h2 id="check-title">Make space deliberately.</h2>
+            <p id="check-message">
+              Check a proposed interval to see its minimum available capacity
+              and any conflicting segments.
+            </p>
+            <div id="conflicts"></div>
+          </aside>
+        </div>
+        <section>
+          <div class="section-heading">
+            <h2>Reservation ledger</h2>
+            <label
+              >Status<select id="filter">
+                <option value="all">All records</option>
+                <option value="active">Active</option>
+                <option value="cancelled">Cancelled</option>
+              </select></label
+            >
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID / key</th>
+                  <th>Interval</th>
+                  <th>Units</th>
+                  <th>Note</th>
+                  <th>State / version</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+      <details>
+        <summary>Create a resource</summary>
+        <form id="create">
+          <label
+            >Name<input
+              id="name"
+              maxlength="48"
+              pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,47}"
+              placeholder="gpu-pool"
+              required /></label
+          ><label
+            >Capacity<input
+              id="new-capacity"
+              type="number"
+              min="1"
+              max="1000"
+              value="4"
+              required /></label
+          ><button type="submit">Create resource</button>
+        </form>
+        <p>
+          Capacity is immutable. Create a separate resource to study another
+          capacity.
+        </p>
+      </details>
+      <details>
+        <summary>Model &amp; API notes</summary>
+        <p>
+          Intervals use integer minutes on an abstract horizon [0, 525600], with
+          start included and end excluded. A booking ending at minute 60 leaves
+          capacity available for one beginning at 60. This app deliberately does
+          not interpret time zones or calendar dates.
+        </p>
+        <p>
+          SQLite serializes capacity checks and inserts in one write
+          transaction. Cancellation requires the current booking version.
+          Previews are advisory; the final reservation always checks again.
+          Rejected requests do not consume their request key. Accepted keys
+          remain bound to their payload even after cancellation.
+        </p>
+        <p>
+          Local-only demonstration: there is no authentication, payment,
+          automatic expiry or background scheduler. Keep the server on loopback.
+          Up to 100 resources, 500 bookings per resource and 10,000 bookings
+          overall, including cancelled history.
+        </p>
+      </details>
+      <footer>
+        <span>SLOT LEDGER</span
+        ><span>Atomic reservations. Visible limits.</span>
+      </footer>
+    </main>
+    <script src="app.js" defer></script>
+  </body>
+</html>
