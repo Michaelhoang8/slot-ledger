@@ -8,17 +8,11 @@
   </head>
   <body>
     <header>
-      <a href="#">SLOT / LEDGER</a><span>CAPACITY IS A SHARED RESOURCE.</span
+      <h1>Slot Ledger</h1>
+      <button id="booking-open" class="primary">Reserve slot</button
       ><button id="refresh">Refresh</button>
     </header>
     <main>
-      <section class="intro">
-        <div>
-          <p class="eyebrow">RESERVATION SYSTEMS / 054</p>
-          <h1>Room for<br />what comes next.</h1>
-        </div>
-        <p>Reserve shared capacity.<br />See exactly where it fits.</p>
-      </section>
       <div class="toolbar">
         <label>Resource<select id="resource"></select></label
         ><button id="demo">Create example workspace</button
@@ -34,6 +28,13 @@
           </div>
           <p id="integrity"></p>
         </div>
+        <section class="reservation-map">
+          <div class="section-heading">
+            <h2>Reservations</h2>
+            <span>Abstract minutes · active bookings</span>
+          </div>
+          <div id="lanes" role="group" aria-label="Reservation intervals"></div>
+        </section>
         <section class="timeline">
           <div class="section-heading">
             <h2>Occupancy</h2>
@@ -46,74 +47,6 @@
             aria-label="Resource occupancy over the reserved time range"
           ></svg>
         </section>
-        <div class="columns">
-          <section>
-            <div class="section-heading">
-              <h2>Request a slot</h2>
-              <span>Preview does not hold capacity</span>
-            </div>
-            <form id="booking">
-              <label class="full"
-                >Request key<input
-                  id="request-key"
-                  maxlength="48"
-                  pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,47}"
-                  required /></label
-              ><label
-                >Start minute<input
-                  id="start"
-                  type="number"
-                  min="0"
-                  max="525599"
-                  value="90"
-                  required /></label
-              ><label
-                >End minute<input
-                  id="end"
-                  type="number"
-                  min="1"
-                  max="525600"
-                  value="150"
-                  required /></label
-              ><label
-                >Units<input
-                  id="units"
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value="2"
-                  required /></label
-              ><label class="full"
-                >Note<input id="note" maxlength="120" value="Experiment run"
-              /></label>
-              <div class="full actions">
-                <button type="submit" name="action" value="preview">
-                  Check capacity</button
-                ><button
-                  type="submit"
-                  name="action"
-                  value="reserve"
-                  class="primary"
-                >
-                  Reserve slot ↗</button
-                ><button type="button" id="new-key">New request key</button>
-              </div>
-            </form>
-            <p class="hint">
-              Reuse the same key and payload to retry safely. A retry returns
-              the booking's current state; it never reactivates a cancellation.
-            </p>
-          </section>
-          <aside>
-            <p class="eyebrow">ADMISSION CHECK</p>
-            <h2 id="check-title">Make space deliberately.</h2>
-            <p id="check-message">
-              Check a proposed interval to see its minimum available capacity
-              and any conflicting segments.
-            </p>
-            <div id="conflicts"></div>
-          </aside>
-        </div>
         <section>
           <div class="section-heading">
             <h2>Reservation ledger</h2>
@@ -189,11 +122,82 @@
           overall, including cancelled history.
         </p>
       </details>
-      <footer>
-        <span>SLOT LEDGER</span
-        ><span>Atomic reservations. Visible limits.</span>
-      </footer>
     </main>
+    <dialog id="booking-dialog" aria-labelledby="booking-heading">
+      <div class="dialog-head">
+        <h2 id="booking-heading">Reserve slot</h2>
+        <button id="booking-close">Close</button>
+      </div>
+      <p id="booking-status" role="status"></p>
+      <div class="columns">
+        <section>
+          <div class="section-heading">
+            <h2>Interval</h2>
+            <span>Preview does not hold capacity</span>
+          </div>
+          <form id="booking">
+            <label class="full"
+              >Request key<input
+                id="request-key"
+                maxlength="48"
+                pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,47}"
+                required /></label
+            ><label
+              >Start minute<input
+                id="start"
+                type="number"
+                min="0"
+                max="525599"
+                value="90"
+                required /></label
+            ><label
+              >End minute<input
+                id="end"
+                type="number"
+                min="1"
+                max="525600"
+                value="150"
+                required /></label
+            ><label
+              >Units<input
+                id="units"
+                type="number"
+                min="1"
+                max="1000"
+                value="2"
+                required /></label
+            ><label class="full"
+              >Note<input id="note" maxlength="120" value="Experiment run"
+            /></label>
+            <div class="full actions">
+              <button type="submit" name="action" value="preview">
+                Check capacity</button
+              ><button
+                type="submit"
+                name="action"
+                value="reserve"
+                class="primary"
+              >
+                Reserve slot ↗</button
+              ><button type="button" id="new-key">New request key</button>
+            </div>
+          </form>
+          <p class="hint">
+            Reuse the same key and payload to retry safely. A retry returns the
+            booking's current state; it never reactivates a cancellation.
+          </p>
+        </section>
+        <aside>
+          <p class="eyebrow">ADMISSION CHECK</p>
+          <h2 id="check-title">Not checked</h2>
+          <p id="check-message">
+            Check a proposed interval to see its minimum available capacity and
+            any conflicting segments.
+          </p>
+          <div id="conflicts"></div>
+        </aside>
+      </div>
+    </dialog>
     <script src="app.js" defer></script>
   </body>
 </html>

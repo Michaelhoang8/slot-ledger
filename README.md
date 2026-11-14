@@ -1,6 +1,6 @@
 # Slot Ledger
 
-A durable capacity-reservation API with a quiet, inspectable frontend. Reserve quantities over half-open intervals, explain conflicts, cancel with version checks, and retry accepted requests without double booking.
+A durable capacity-reservation API with a reservation timeline and occupancy view. Reserve quantities over half-open intervals, explain conflicts, cancel with version checks, and retry accepted requests without double booking.
 
 ![Slot Ledger capacity workspace](docs/workbench.png)
 
@@ -14,7 +14,7 @@ python run.py --port 8000
 
 Open http://127.0.0.1:8000 and choose **Create example workspace**. This persists a resource with four units and three example reservations. The default proposed interval [90,150) needs two units but overlaps a fully occupied segment [90,120). Cancel booking #1, then reserve: the request succeeds. Submitting the same key and payload again returns the existing booking without consuming more capacity.
 
-The database is `data/slots.sqlite3`, ignored by Git. Override it with `--database PATH`. For a consistent backup, stop the server and copy the data directory, including any SQLite sidecars. The UI supports creating additional immutable-capacity resources, filtering active/cancelled reservations, refreshing external changes, and exporting the displayed ledger as JSON.
+The database is `data/slots.sqlite3`, ignored by Git. Override it with `--database PATH`. For a consistent backup, stop the server and copy the data directory, including any SQLite sidecars. Open **Reserve slot** to preview or commit an interval in the booking dialog. Active reservations appear as proportional timeline lanes with reduced-motion-aware transitions. The UI supports creating additional immutable-capacity resources, filtering active/cancelled reservations, refreshing external changes, and exporting the displayed ledger as JSON.
 
 ## Transaction semantics
 

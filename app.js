@@ -44,10 +44,12 @@ async function action(fn) {
     for (const element of document.querySelectorAll("button,select"))
       element.disabled = false;
     $("export").disabled = !snapshot;
+    $("booking-open").disabled = !snapshot;
+    $("booking-status").textContent = $("message").textContent;
   }
 }
 function clearCheck() {
-  $("check-title").textContent = "Make space deliberately.";
+  $("check-title").textContent = "Not checked";
   $("check-message").textContent =
     "Check a proposed interval to see its minimum available capacity and any conflicting segments.";
   $("conflicts").innerHTML = "";
@@ -110,6 +112,7 @@ function render() {
   if (!segments.length)
     svg += '<text x="340" y="140">No active reservations</text>';
   $("plot").innerHTML = svg;
+  drawLanes(first, last);
 }
 function payload() {
   return {
@@ -123,7 +126,7 @@ function payload() {
 function check(result) {
   $("check-title").textContent = result.fits
     ? "This interval fits."
-    : "Capacity is spoken for.";
+    : "Insufficient capacity";
   $("check-message").textContent =
     `Minimum available: ${result.available_min} of ${result.capacity} units. ${result.fits ? "This preview is advisory; reserve to commit." : "Conflicting segments are listed below."}`;
   $("conflicts").innerHTML = result.conflicts
@@ -250,3 +253,32 @@ $("export").onclick = () => {
 };
 $("request-key").value = key();
 action(() => list());
+
+$("booking-open").onclick = () => $("booking-dialog").showModal();
+$("booking-close").onclick = () => $("booking-dialog").close();
+function drawLanes(first, last) {
+  const active = snapshot.bookings.filter((b) => b.status === "active"),
+    span = last - first || 1;
+  const labels = Array.from(
+    { length: 5 },
+    (_, i) => `<span>${Math.round(first + (span * i) / 4)}</span>`,
+  ).join("");
+  $("lanes").innerHTML =
+    `<div class="lane-axis"><span>Booking / units</span><div>${labels}</div></div>` +
+    active
+      .map(
+        (b, i) =>
+          `<div class="lane"><div class="lane-label"><strong>${esc(b.note || b.request_key)}</strong><span>#${b.id} · ${b.units} units</span></div><div class="lane-track"><div class="reservation-bar tone-${i % 4}"><span>[${b.start}, ${b.end})</span></div></div></div>`,
+      )
+      .join("");
+  $("lanes")
+    .querySelectorAll(".reservation-bar")
+    .forEach((bar, i) => {
+      const b = active[i];
+      bar.style.left = `${((b.start - first) / span) * 100}%`;
+      bar.style.width = `${((b.end - b.start) / span) * 100}%`;
+      bar.title = `[${b.start}, ${b.end}) · ${b.units} units · ${b.note || b.request_key}`;
+    });
+  if (!active.length)
+    $("lanes").innerHTML += '<p class="empty-lanes">No active reservations</p>';
+}
